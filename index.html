@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=, initial-scaldevice-widthe=1.0">
+    <title>8-Puzzle Game</title>
+</head>
+<body>
+    <div id="title">8-Puzzle Game</div>
+    <table>
+        <tbody>
+            <tr>
+                <td><div class="cell" id="c0"><span>0</span></div></td>
+                <td><div class="cell" id="c1"><span>1</span></div></td>
+                <td><div class="cell" id="c2"><span>2</span></div></td>
+            </tr>
+            <tr>
+                <td><div class="cell" id="c3"><span>3</span></div></td>
+                <td><div class="cell" id="c4"><span>4</span></div></td>
+                <td><div class="cell" id="c5"><span>5</span></div></td>
+            </tr>
+            <tr>
+                <td><div class="cell" id="c6"><span>6</span></div></td>
+                <td><div class="cell" id="c7"><span>7</span></div></td>
+                <td><div class="cell" id="c8"><span>8</span></div></td>
+            </tr>
+            
+        </tbody>
+    </table>
+   <button onclick="shuffle()" id="shuffle">shuffle</button>
+   <button onclick="solve()" id="solve">solve</button>
+</body>
+<style>
+    table {
+        width: 600px;
+        background-color: rgba(0, 0, 0, .2);
+        padding: 2px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    tr {
+        height: 200px;
+    }
+    tbody {
+        width: 100%;
+        
+    } 
+    .cell{
+        border: 1px solid;
+        height: 200px;
+        font-size: 80px;
+        font-family: 'Courier New', Courier, monospace;
+        text-align: center;
+        background-color: rgba(255, 255, 255);
+        margin: 0px;
+        transition-property: 'transforme';
+        transition-duration: .1s;
+        
+         
+    }
+    .missing {
+        opacity: 0;
+    }
+    span {
+        position: relative;
+        top: 50px;
+    }
+    span {
+        position: relative;
+        top: 50px;
+        cursor: pointer;
+    }
+    #title {
+        text-align: center;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 4em;
+        margin: 20px
+    }
+    button {
+        width: 150px;
+        height: 80px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 2em;
+        position: relative;
+        top: 20px;
+        
+        
+    }
+    ::selection {
+        display: none;
+    }
+    .highlighted {
+        background: rgb(242, 255, 156, .5);
+    }
+    /* #c7 {
+        transform: translate(102%, 0%);
+    }
+    #c4 {
+        transform: translate(0%, 102%);
+    } */
+    /* body {
+        align-items: center;
+        justify-content: center;
+    } */
+    
+</style>
+<script>
+    solving = false;
+    steps = [];
+    curr=0;
+    const missing = 0; 
+    var e = []; //elements
+    var t = []; //translation
+    var c = []; //coordinates
+    var grid = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    for(let i=0; i<9; i++){
+        e[i] = document.getElementById("c"+i);
+        t[i] = {x:0, y:0};
+        c[i] = {left: e[i].getBoundingClientRect().left, bottom: e[i].getBoundingClientRect().bottom}
+    }
+    e[missing].classList.add("missing");
+  
+    function swap(a, b){
+        var tmp = grid[a];
+        grid[a] = grid[b];
+        grid[b] = tmp;
+        a = grid[a]; b = grid[b]; 
+        var diff = {
+            x : (c[a].left ) -  (c[b].left ),
+            y : (c[a].bottom ) -  (c[b].bottom ),
+        };
+        t[b].x += diff.x; t[b].y += diff.y;
+        t[a].x -= diff.x; t[a].y -= diff.y;
+
+        c[b].left += diff.x; c[b].bottom += diff.y;
+        c[a].left -= diff.x; c[a].bottom -= diff.y;
+
+        e[b].style.transform = `translate(${t[b].x}px, ${t[b].y}px)`;
+        e[a].style.transform = `translate(${t[a].x}px, ${t[a].y}px)`;
+        console.log(diff);
+    }
+    
+    function shuffle(){
+        for(let i=0; i<10; i++){
+            swap(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9)) ;
+        }
+        console.log(grid)
+    }
+    function swipe(ev){
+        var i = Number (this.id[1]);
+        var diff = Math.abs(grid.indexOf(missing) - grid.indexOf(i));
+        if(diff == 1 || diff == 3){
+          swap(grid.indexOf(missing), grid.indexOf(i));  
+          if(solving)
+          highlight(steps[curr++])
+        } 
+        
+    }
+    function highlight(step){
+        e.forEach((element) => {
+            element.classList.remove("highlighted");})
+            i_missing = grid.indexOf(missing)
+        switch(step){
+            case "UP":
+                i = i_missing-3
+            break;
+            case "DOWN":
+                i = i_missing+3
+            break;
+            case "LEFT":
+                i = i_missing-1
+            break;
+            case "RIGHT":
+                i = i_missing+1
+            break;
+        }
+        e[grid[i]].classList.add("highlighted")
+    }
+
+
+    function solve(ev){
+        solving = true;
+        // backend call
+        const arrayToSend = grid;
+            fetch('http://localhost:8000', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(arrayToSend)
+            })
+            .then(response => response.json())
+            .then(data => {
+                steps =  data.array;
+                console.log(steps)
+                highlight(steps[curr++])
+            })
+            .catch(error => console.error('Error:', error));
+    
+        //
+        
+    } 
+    
+    
+    e.forEach((element) => {
+    element.addEventListener('click', swipe, false)
+});
+
+
+
+</script>
+</html>
