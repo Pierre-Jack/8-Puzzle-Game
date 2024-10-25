@@ -93,6 +93,18 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+        #report {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #report h2 {
+            margin-top: 0;
+        }
+        #report p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -128,7 +140,17 @@
     <button onclick="shuffle()" id="shuffle">Shuffle</button>
 </div>
 <div id="right-container">
-    <!-- Blank space for additional data like time response -->
+    <div id="report">
+        <h2>Report</h2>
+        <p><strong>Path to Goal:</strong> <span id="pathToGoal"></span></p>
+        <p><strong>Cost of Path:</strong> <span id="costOfPath"></span></p>
+        <p><strong>Nodes Expanded:</strong> <span id="nodesExpanded"></span></p>
+        <p><strong>Search Depth:</strong> <span id="searchDepth"></span></p>
+        <p><strong>Running Time:</strong> <span id="runningTime"></span></p>
+        <h3>Algorithm Details</h3>
+        <p><strong>Data Structure Used:</strong> <span id="dataStructure"></span></p>
+        <p><strong>Explanation:</strong> <span id="algorithmExplanation"></span></p>
+    </div>
 </div>
 </body>
 <script>
