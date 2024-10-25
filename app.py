@@ -63,6 +63,41 @@ def solve_dfs(initial):   #missing number is 0
                 stack.append(child)
     return False, d
 
+def solve_ids(initial):   #missing number is 0
+    depth = 0
+    while depth < 1e15:
+        solvable, m = solve_dls(initial, depth)
+        if solvable:
+            return True, m
+        depth += 1
+    return False, {}
+
+def solve_dls(initial, depth):   #missing number is 0
+    stack = []
+    goal = 12345678
+    d = dict()
+    state = initial
+
+    d[state] = -1
+
+    if state == goal:
+        return True, d
+
+    stack.append((state, 0))
+
+    while stack:
+        state, level = stack.pop()
+        if level < depth:
+            for child in get_children(state):
+                if not child in d:
+                    d[child] = state
+                    if child == goal:
+                        return True, d
+                    stack.append((child, level+1))
+    return False, d
+
+
+
 def get_path(parent_dict):  #gets the path from the dict of states -- (node, parent) is stored as (key, value) in the dict
     path = deque()
     node = 12345678
@@ -121,7 +156,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # response array
         response_array = []
         init = int(''.join(map(str, received_array)))
-        solvable, m = solve_dfs(init)
+        solvable, m = solve_ids(init)
         if solvable:
             response_array = get_directions(get_path(m))
         print(f'Response array: {response_array}')
