@@ -96,7 +96,9 @@ def solve_dls(initial, depth):   #missing number is 0
                     stack.append((child, level+1))
     return False, d
 
-
+def solve_astar(initial):
+    #TODO
+    return False, {}
 
 def get_path(parent_dict):  #gets the path from the dict of states -- (node, parent) is stored as (key, value) in the dict
     path = deque()
@@ -152,14 +154,26 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         received_array = json.loads(post_data)
         print(f'Received array: {received_array}')
-
-        # response array
-        response_array = []
         init = int(''.join(map(str, received_array)))
-        solvable, m = solve_ids(init)
-        if solvable:
-            response_array = get_directions(get_path(m))
+        path = self.path.strip('/')
+
+
+        if path == 'bfs':
+            solvable, m = solve_bfs(init)
+        elif path == 'dfs':
+            solvable, m = solve_dfs(init)
+        elif path == 'ids':
+            solvable, m = solve_ids(init)
+        elif path == 'astar':
+            solvable, m = solve_astar(init)
+        else:
+            self.send_response(404)
+            self.end_headers()
+            return
+        response_array = get_directions(get_path(m)) if solvable else []
         print(f'Response array: {response_array}')
+
+
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')

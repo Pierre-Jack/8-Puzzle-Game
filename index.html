@@ -28,7 +28,10 @@
     </tbody>
 </table>
 <button onclick="shuffle()" id="shuffle">shuffle</button>
-<button onclick="solve()" id="solve">solve</button>
+<button onclick="solve('bfs')" id="solveBFS">Solve BFS</button>
+<button onclick="solve('dfs')" id="solveDFS">Solve DFS</button>
+<button onclick="solve('ids')" id="solveIDS">Solve IDS</button>
+<button onclick="solve('astar')" id="solveAStar">Solve A*</button>
 <br>
 <input type="text" id="puzzleInput" placeholder="Enter puzzle number">
 <button onclick="insertPuzzle()" id="insertPuzzle">Insert Puzzle</button>
@@ -181,11 +184,10 @@
     }
 
 
-    function solve(ev){
+    function solve(algorithm) {
         solving = true;
-        // backend call
         const arrayToSend = grid;
-        fetch('http://localhost:8000', {
+        fetch(`http://localhost:8000/${algorithm}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -194,15 +196,13 @@
         })
             .then(response => response.json())
             .then(data => {
-                steps =  data.array;
-                console.log(steps)
-                highlight(steps[curr++])
+                steps = data.array;
+                console.log(steps);
+                highlight(steps[curr++]);
             })
             .catch(error => console.error('Error:', error));
-
-        //
-
     }
+
 
     function insertPuzzle() {
         const input = document.getElementById("puzzleInput").value;
