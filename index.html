@@ -6,29 +6,32 @@
     <title>8-Puzzle Game</title>
 </head>
 <body>
-    <div id="title">8-Puzzle Game</div>
-    <table>
-        <tbody>
-            <tr>
-                <td><div class="cell" id="c0"><span>0</span></div></td>
-                <td><div class="cell" id="c1"><span>1</span></div></td>
-                <td><div class="cell" id="c2"><span>2</span></div></td>
-            </tr>
-            <tr>
-                <td><div class="cell" id="c3"><span>3</span></div></td>
-                <td><div class="cell" id="c4"><span>4</span></div></td>
-                <td><div class="cell" id="c5"><span>5</span></div></td>
-            </tr>
-            <tr>
-                <td><div class="cell" id="c6"><span>6</span></div></td>
-                <td><div class="cell" id="c7"><span>7</span></div></td>
-                <td><div class="cell" id="c8"><span>8</span></div></td>
-            </tr>
-            
-        </tbody>
-    </table>
-   <button onclick="shuffle()" id="shuffle">shuffle</button>
-   <button onclick="solve()" id="solve">solve</button>
+<div id="title">8-Puzzle Game</div>
+<table>
+    <tbody>
+    <tr>
+        <td><div class="cell" id="c0"><span>0</span></div></td>
+        <td><div class="cell" id="c1"><span>1</span></div></td>
+        <td><div class="cell" id="c2"><span>2</span></div></td>
+    </tr>
+    <tr>
+        <td><div class="cell" id="c3"><span>3</span></div></td>
+        <td><div class="cell" id="c4"><span>4</span></div></td>
+        <td><div class="cell" id="c5"><span>5</span></div></td>
+    </tr>
+    <tr>
+        <td><div class="cell" id="c6"><span>6</span></div></td>
+        <td><div class="cell" id="c7"><span>7</span></div></td>
+        <td><div class="cell" id="c8"><span>8</span></div></td>
+    </tr>
+
+    </tbody>
+</table>
+<button onclick="shuffle()" id="shuffle">shuffle</button>
+<button onclick="solve()" id="solve">solve</button>
+<br>
+<input type="text" id="puzzleInput" placeholder="Enter puzzle number">
+<button onclick="insertPuzzle()" id="insertPuzzle">Insert Puzzle</button>
 </body>
 <style>
     table {
@@ -43,8 +46,8 @@
     }
     tbody {
         width: 100%;
-        
-    } 
+
+    }
     .cell{
         border: 1px solid;
         height: 200px;
@@ -55,8 +58,8 @@
         margin: 0px;
         transition-property: 'transforme';
         transition-duration: .1s;
-        
-         
+
+
     }
     .missing {
         opacity: 0;
@@ -83,8 +86,8 @@
         font-size: 2em;
         position: relative;
         top: 20px;
-        
-        
+
+
     }
     ::selection {
         display: none;
@@ -102,13 +105,13 @@
         align-items: center;
         justify-content: center;
     } */
-    
+
 </style>
 <script>
     solving = false;
     steps = [];
     curr=0;
-    const missing = 0; 
+    const missing = 0;
     var e = []; //elements
     var t = []; //translation
     var c = []; //coordinates
@@ -119,12 +122,12 @@
         c[i] = {left: e[i].getBoundingClientRect().left, bottom: e[i].getBoundingClientRect().bottom}
     }
     e[missing].classList.add("missing");
-  
+
     function swap(a, b){
         var tmp = grid[a];
         grid[a] = grid[b];
         grid[b] = tmp;
-        a = grid[a]; b = grid[b]; 
+        a = grid[a]; b = grid[b];
         var diff = {
             x : (c[a].left ) -  (c[b].left ),
             y : (c[a].bottom ) -  (c[b].bottom ),
@@ -139,7 +142,7 @@
         e[a].style.transform = `translate(${t[a].x}px, ${t[a].y}px)`;
         console.log(diff);
     }
-    
+
     function shuffle(){
         for(let i=0; i<10; i++){
             swap(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9)) ;
@@ -150,29 +153,29 @@
         var i = Number (this.id[1]);
         var diff = Math.abs(grid.indexOf(missing) - grid.indexOf(i));
         if(diff == 1 || diff == 3){
-          swap(grid.indexOf(missing), grid.indexOf(i));  
-          if(solving)
-          highlight(steps[curr++])
-        } 
-        
+            swap(grid.indexOf(missing), grid.indexOf(i));
+            if(solving)
+                highlight(steps[curr++])
+        }
+
     }
     function highlight(step){
         e.forEach((element) => {
             element.classList.remove("highlighted");})
-            i_missing = grid.indexOf(missing)
+        i_missing = grid.indexOf(missing)
         switch(step){
             case "UP":
                 i = i_missing-3
-            break;
+                break;
             case "DOWN":
                 i = i_missing+3
-            break;
+                break;
             case "LEFT":
                 i = i_missing-1
-            break;
+                break;
             case "RIGHT":
                 i = i_missing+1
-            break;
+                break;
         }
         e[grid[i]].classList.add("highlighted")
     }
@@ -182,13 +185,13 @@
         solving = true;
         // backend call
         const arrayToSend = grid;
-            fetch('http://localhost:8000', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(arrayToSend)
-            })
+        fetch('http://localhost:8000', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(arrayToSend)
+        })
             .then(response => response.json())
             .then(data => {
                 steps =  data.array;
@@ -196,17 +199,32 @@
                 highlight(steps[curr++])
             })
             .catch(error => console.error('Error:', error));
-    
+
         //
-        
-    } 
-    
-    
+
+    }
+
+    function insertPuzzle() {
+        const input = document.getElementById("puzzleInput").value;
+        if (!/^[0-8]{9}$/.test(input) || new Set(input).size !== 9) {
+            alert("Invalid input. Please enter a 9-digit number containing each digit from 0 to 8 exactly once.");
+            return;
+        }
+        const targetGrid = input.split('').map(Number);
+        grid = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        for (let i = 0; i < 9; i++) {
+            const currentPos = grid.indexOf(targetGrid[i]);
+            if (currentPos !== i) {
+                swap(i, currentPos);
+            }
+        }
+        console.log("Updated grid:", grid);
+    }
+
     e.forEach((element) => {
-    element.addEventListener('click', swipe, false)
-});
-
-
+        element.addEventListener('click', swipe, false)
+    });
 
 </script>
 </html>
