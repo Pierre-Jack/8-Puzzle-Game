@@ -39,9 +39,35 @@ def solve_bfs(initial):   #missing number is 0 #
         state = q.popleft()
     return False, d
 
+def solve_dfs(initial):   #missing number is 0
+    stack = []
+    goal = 12345678
+    d = dict()
+    state = initial
+
+    d[state] = -1
+
+    if state == goal:
+        return True, d
+
+    stack.append(state)
+
+    while stack:
+        state = stack.pop()
+        for child in get_children(state):
+            if not child in d:
+                d[child] = state
+                if child == goal:
+                    return True, d
+                stack.append(child)
+    return False, d
+
+
 def get_path(parent_dict):  #gets the path from the dict of states -- (node, parent) is stored as (key, value) in the dict
     path = deque()
     node = 12345678
+    if node not in parent_dict: #for debugging purposes
+        return []
     while node != -1:
          path.appendleft(node)
          node = parent_dict[node]
@@ -95,7 +121,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # response array
         response_array = []
         init = int(''.join(map(str, received_array)))
-        solvable, m = solve_bfs(init)
+        solvable, m = solve_dfs(init)
         if solvable:
             response_array = get_directions(get_path(m))
 
