@@ -142,14 +142,11 @@
 <div id="right-container">
     <div id="report">
         <h2>Report</h2>
-        <p><strong>Path to Goal:</strong> <span id="pathToGoal"></span></p>
-        <p><strong>Cost of Path:</strong> <span id="costOfPath"></span></p>
-        <p><strong>Nodes Expanded:</strong> <span id="nodesExpanded"></span></p>
-        <p><strong>Search Depth:</strong> <span id="searchDepth"></span></p>
-        <p><strong>Running Time:</strong> <span id="runningTime"></span></p>
-        <h3>Algorithm Details</h3>
-        <p><strong>Data Structure Used:</strong> <span id="dataStructure"></span></p>
-        <p><strong>Explanation:</strong> <span id="algorithmExplanation"></span></p>
+        <p><strong>Is Solvable? </strong> <span id="solvable"></span></p>
+        <p><strong>Cost of Path: </strong> <span id="costOfPath"></span></p>
+        <p><strong>Nodes Expanded: </strong> <span id="nodesExpanded"></span></p>
+        <p><strong>Search Depth: </strong> <span id="searchDepth"></span></p>
+        <p><strong>Running Time: </strong> <span id="runningTime"></span></p>
     </div>
 </div>
 </body>
@@ -191,9 +188,37 @@
 
     function shuffle() {
         for (let i = 0; i < 10; i++) {
+            a = Math.floor(Math.random() * 9);
+            b = Math.floor(Math.random() * 9);
+            swap(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9));
+        }
+        while(!isSolvable(grid)){
             swap(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9));
         }
         console.log(grid);
+    }
+
+    function getInvCount(grid) {
+        let arr = [];
+        for(let i=0;i<3;i++){
+            arr[i] = [];
+            for(let j=0;j<3;j++){
+                arr[i][j] = grid[i*3+j];
+            }
+        }
+        let inv_count = 0 ;
+        for(let i=0;i<2;i++){
+            for(let j=i+1;j<3;j++){
+                if (arr[j][i] > 0 && arr[j][i] > arr[i][j])
+                    inv_count += 1;
+            }
+        }
+        console.log("Inv Count: ", inv_count);
+        return inv_count;
+    }
+    function isSolvable(grid) {
+        let invCount = getInvCount(grid);
+        return (invCount % 2 == 0);
     }
 
     function swipe(ev) {
@@ -241,6 +266,11 @@
             .then(response => response.json())
             .then(data => {
                 steps = data.array;
+                document.getElementById("nodesExpanded").innerText = data.nodes_expanded;
+                document.getElementById("searchDepth").innerText = data.maxdepth;
+                document.getElementById("runningTime").innerText = data.totaltime;
+                document.getElementById("costOfPath").innerText = data.cost;
+                document.getElementById("solvable").innerText = data.solvable;
                 console.log(steps);
                 highlight(steps[curr++]);
             })
