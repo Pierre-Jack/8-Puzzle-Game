@@ -1,5 +1,8 @@
 from collections import deque
 import heapq
+import time
+from sympy.strategies.core import switch
+
 
 def get_children(state):  #missing number is 0
     children = []
@@ -19,26 +22,28 @@ def get_children(state):  #missing number is 0
                     children.append(int("".join(ns)))
     return children
 
-def solve_bfs(initial):   #missing number is 0 #
+def solve_bfs(initial):   #missing number is 0
     q = deque()
     goal = 12345678
     #s = set()
     d = dict()
     state = initial
-
+    nodes_expanded = 0
     d[state] = -1
     if state == goal:
-        return True, d
+        return True, d, nodes_expanded
     q.append(state)
 
     while q:
+        nodes_expanded = nodes_expanded + 1
         for child in get_children(state):
             if not child in d:
                 d[child] = state
-                if child == goal: return True, d
                 q.append(child)
         state = q.popleft()
-    return False, d
+        if state == goal:
+            return True, d, nodes_expanded
+    return False, d, nodes_expanded
 
 def solve_dfs(initial):   #missing number is 0
     stack = []
@@ -46,56 +51,63 @@ def solve_dfs(initial):   #missing number is 0
     d = dict()
     explore = set()
     state = initial
-
+    nodes_expanded = 0
     d[state] = -1
+    max_depth = 0
 
     if state == goal:
-        return True, d
-    stack.append(state)
+        return True, d, nodes_expanded, max_depth
+    stack.append((state,0))
 
     while stack:
-        state = stack.pop()
+        state, level= stack.pop()
+        max_depth = max(max_depth, level)
+        if state == goal:
+            return True, d,nodes_expanded, max_depth
         explore.add(state)
+        nodes_expanded = nodes_expanded + 1
         for child in get_children(state):
             if not child in d and not child in stack and not child in explore:
                 d[child] = state
-                if child == goal:
-                    return True, d
-                stack.append(child)
-    return False, d
+                stack.append((child, level+1))
+
+    return False, d, nodes_expanded, max_depth
 
 def solve_ids(initial):   #missing number is 0
     depth = 0
-    while depth < 1e15:
-        solvable, m = solve_dls(initial, depth)
+    nodes_expanded = 0
+    while depth < 2e5:
+        solvable, m, n = solve_dls(initial, depth)
+        nodes_expanded = nodes_expanded + n
         if solvable:
-            return True, m
+            return True, m, nodes_expanded
         depth += 1
-    return False, {}
+    return False, {}, nodes_expanded
 
 def solve_dls(initial, depth):   #missing number is 0
     stack = []
     goal = 12345678
     d = dict()
     state = initial
-
+    nodes_expanded = 0
     d[state] = -1
 
     if state == goal:
-        return True, d
+        return True, d, nodes_expanded
 
     stack.append((state, 0))
 
     while stack:
         state, level = stack.pop()
+        if state == goal:
+            return True, d, nodes_expanded
         if level < depth:
+            nodes_expanded = nodes_expanded + 1
             for child in get_children(state):
                 if not child in d:
                     d[child] = state
-                    if child == goal:
-                        return True, d
                     stack.append((child, level+1))
-    return False, d
+    return False, d, nodes_expanded
 
 class AStarState(object):
     def __init__(self, state, g, h):
@@ -235,19 +247,24 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         init = int(''.join(map(str, received_array)))
         path = self.path.strip('/')
 
+        start_time = time.time()
 
         if path == 'bfs':
-            solvable, m = solve_bfs(init)
+            solvable, m, nodes_expanded = solve_bfs(init)
         elif path == 'dfs':
-            solvable, m = solve_dfs(init)
+            solvable, m, nodes_expanded, maxdepth = solve_dfs(init)
         elif path == 'ids':
-            solvable, m = solve_ids(init)
+            solvable, m, nodes_expanded = solve_ids(init)
         elif path == 'astar':
-            solvable, m = solve_astar(init, 0)
+            solvable, m, nodes_expanded = solve_astar(init)
+            # solvable, m = solve_astar(init, 0)
         else:
             self.send_response(404)
             self.end_headers()
             return
+
+        end_time = time.time()
+        total_time = end_time - start_time
         response_array = get_directions(get_path(m)) if solvable else []
         print(f'Response array: {response_array}')
         print(f'Cost: {len(response_array)}')
@@ -257,7 +274,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
-        response = {'array': response_array}
+        response = {
+            'array': response_array,
+            'nodes_expanded': nodes_expanded,
+            'solvable': solvable,
+            'totaltime': f"{int(total_time*1000)} ms",
+            'cost': len(response_array),
+            'maxdepth': maxdepth if path == 'dfs' else len(response_array)
+        }
         self.wfile.write(json.dumps(response).encode())
 
 def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler, port=8000):
