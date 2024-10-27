@@ -106,6 +106,8 @@ class AStarState(object):
         return f'State: {self.state}, G(n)= {self.g}, H(n)= {self.h}'
     def __lt__(self, other):
         return (self.h + self.g) < (other.h + other.g)
+    def __eq__(self, other):
+        return self.state == other.state
 
 def manhattan_distance(state):
     s = str(state)
@@ -135,7 +137,7 @@ def solve_astar(initial):   #missing number is 0
     frontier = []
     goal = 12345678
     d = dict()
-    explored = set()
+    explored = []
     state = initial
     d[state] = -1
 
@@ -145,23 +147,29 @@ def solve_astar(initial):   #missing number is 0
     frontier.append(AStarState(state, 0, manhattan_distance(state)))
     heapq.heapify(frontier)
 
-    while frontier:
+    while frontier:         #while frontier is not empty
         current_state = heapq.heappop(frontier)
-        if state == goal:
+        if current_state.state == goal:
             return True, d
-        explored.add(current_state)
+        explored.append(current_state)
 
         for child in get_children(current_state.state):
-            d[child] = current_state.state
-            child_state = AStarState(child, get_cost_to_state(child, d), manhattan_distance(child))
-            if not (child_state in explored or child_state in frontier):
+            temp = AStarState(child, 0, 0)
+            if not (temp in explored or temp in frontier):
+                d[child] = current_state.state
+                child_state = AStarState(child, get_cost_to_state(child, d), manhattan_distance(child))
                 heapq.heappush(frontier, child_state)
                 # heapq.heapify(frontier)
-            elif child_state in frontier:
-                child_state.g = min(get_cost_to_state(child, d), child_state.g)
-                child_state.h = min(child_state.h, manhattan_distance(child))
-                heapq.heapify(frontier)
-    print("No solution found")
+            elif temp in frontier:          #update the cost if the new cost is less
+                for i in range(len(frontier)):
+                    if frontier[i].state == temp.state:
+                        if get_cost_to_state(child, d) < frontier[i].g:
+                            frontier[i].g = get_cost_to_state(child, d)
+                        if manhattan_distance(child) < frontier[i].h:
+                            frontier[i].h = manhattan_distance(child)
+                        heapq.heapify(frontier)
+
+    print("No solution found")      #for debugging purposes
     return False, d
 
 def get_path(parent_dict):  #gets the path from the dict of states -- (node, parent) is stored as (key, value) in the dict
@@ -236,6 +244,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             return
         response_array = get_directions(get_path(m)) if solvable else []
         print(f'Response array: {response_array}')
+        print(f'Cost: {len(response_array)}')
 
 
         self.send_response(200)
