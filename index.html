@@ -155,6 +155,7 @@
     steps = [];
     curr = 0;
     const missing = 0;
+    algorithm = 'bfs';
     var e = []; // elements
     var t = []; // translation
     var c = []; // coordinates
@@ -183,37 +184,27 @@
 
         e[b].style.transform = `translate(${t[b].x}px, ${t[b].y}px)`;
         e[a].style.transform = `translate(${t[a].x}px, ${t[a].y}px)`;
-        console.log(diff);
+        //console.log(diff);
     }
 
     function shuffle() {
         for (let i = 0; i < 10; i++) {
-            a = Math.floor(Math.random() * 9);
-            b = Math.floor(Math.random() * 9);
             swap(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9));
         }
         while(!isSolvable(grid)){
             swap(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9));
         }
-        console.log(grid);
+        //console.log(grid);
     }
 
     function getInvCount(grid) {
-        let arr = [];
-        for(let i=0;i<3;i++){
-            arr[i] = [];
-            for(let j=0;j<3;j++){
-                arr[i][j] = grid[i*3+j];
+        let inv_count = 0;
+        for(let i=0; i<9; i++){
+            for(let j=i+1; j<9; j++){
+                if(grid[i] != 0 && grid[j] != 0 && grid[i] > grid[j]) inv_count++;
             }
         }
-        let inv_count = 0 ;
-        for(let i=0;i<2;i++){
-            for(let j=i+1;j<3;j++){
-                if (arr[j][i] > 0 && arr[j][i] > arr[i][j])
-                    inv_count += 1;
-            }
-        }
-        console.log("Inv Count: ", inv_count);
+        //console.log("Inv Count: ", inv_count);
         return inv_count;
     }
     function isSolvable(grid) {
@@ -226,8 +217,19 @@
         var diff = Math.abs(grid.indexOf(missing) - grid.indexOf(i));
         if (diff == 1 || diff == 3) {
             swap(grid.indexOf(missing), grid.indexOf(i));
-            if (solving)
+            if (solving){
+                if(e[i].classList.contains("highlighted"))
                 highlight(steps[curr++]);
+                else{
+                    e.forEach((element) => {
+                    element.classList.remove("highlighted");
+                    });
+                    solve(algorithm);
+
+                }
+            }
+
+                
         }
     }
 
@@ -272,6 +274,7 @@
                 document.getElementById("costOfPath").innerText = data.cost;
                 document.getElementById("solvable").innerText = data.solvable;
                 console.log(steps);
+                curr = 0;
                 highlight(steps[curr++]);
             })
             .catch(error => console.error('Error:', error));
@@ -284,7 +287,7 @@
             return;
         }
         const targetGrid = input.split('').map(Number);
-        grid = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        //grid = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
         for (let i = 0; i < 9; i++) {
             const currentPos = grid.indexOf(targetGrid[i]);
@@ -292,7 +295,7 @@
                 swap(i, currentPos);
             }
         }
-        console.log("Updated grid:", grid);
+        //console.log("Updated grid:", grid);
     }
 
     e.forEach((element) => {

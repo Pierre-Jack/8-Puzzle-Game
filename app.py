@@ -1,6 +1,6 @@
 from collections import deque
 import time
-from sympy.strategies.core import switch
+
 
 
 def get_children(state):  #missing number is 0
