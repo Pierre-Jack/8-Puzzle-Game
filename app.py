@@ -1,4 +1,5 @@
 from collections import deque
+import heapq
 
 def get_children(state):  #missing number is 0
     children = []
@@ -96,9 +97,69 @@ def solve_dls(initial, depth):   #missing number is 0
                     stack.append((child, level+1))
     return False, d
 
-def solve_astar(initial):
-    #TODO
-    return False, {}
+class AStarState(object):
+    def __init__(self, state, g, h):
+        self.state = state
+        self.g = g
+        self.h = h
+    def __repr__(self):
+        return f'State: {self.state}, G(n)= {self.g}, H(n)= {self.h}'
+    def __lt__(self, other):
+        return (self.h + self.g) < (other.h + other.g)
+
+def manhattan_distance(state):
+    s = str(state)
+    if len(s) < 9: s = "0" + s
+    i = s.find("0")
+    # ns = list(s)
+    x, y = i%3, i//3
+    return x+y
+
+def euclidean_distance(state):
+    s = str(state)
+    if len(s) < 9: s = "0" + s
+    i = s.find("0")
+    x, y = i%3, i//3
+    return (x**2 + y**2)**0.5
+
+def get_cost_to_state(state, parent_dict):
+    if parent_dict[state] == -1:
+        return 0
+    cost = 0
+    while state != -1:
+        cost += 1
+        state = parent_dict[state]
+    return cost
+
+def solve_astar(initial):   #missing number is 0
+    frontier = []
+    goal = 12345678
+    d = dict()
+    explored = set()
+    state = initial
+    d[state] = -1
+
+    if state == goal:
+        return True, d
+
+    frontier.append(AStarState(state, 0, manhattan_distance(state)))
+    heapq.heapify(frontier)
+
+    while frontier:
+        current_state = heapq.heappop(frontier)
+        explored.add(current_state)
+        if state == goal:
+            return True, d
+        for child in get_children(current_state.state):
+            d[child] = state
+            child_state = AStarState(child, get_cost_to_state(child, d), manhattan_distance(child))
+            if not (child_state in explored or child_state in frontier):
+                heapq.heappush(frontier, child_state)
+            elif child_state in frontier:
+                child_state.g = min(get_cost_to_state(child, d), child_state.g)
+                child_state.h = min(child_state.h, manhattan_distance(child))
+                heapq.heapify(frontier)
+    return False, d
 
 def get_path(parent_dict):  #gets the path from the dict of states -- (node, parent) is stored as (key, value) in the dict
     path = deque()
