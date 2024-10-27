@@ -122,14 +122,14 @@ def euclidean_distance(state):
     x, y = i%3, i//3
     return (x**2 + y**2)**0.5
 
-def get_cost_to_state(state, parent_dict):
-    if parent_dict[state] == -1:
-        return 0
+def get_cost_to_state(state, parent_dict):  #gets the cost to reach the state from the initial state
     cost = 0
-    while state != -1:
+    node = state
+    while parent_dict[node] != -1:
         cost += 1
-        state = parent_dict[state]
+        node = parent_dict[node]
     return cost
+
 
 def solve_astar(initial):   #missing number is 0
     frontier = []
@@ -147,18 +147,21 @@ def solve_astar(initial):   #missing number is 0
 
     while frontier:
         current_state = heapq.heappop(frontier)
-        explored.add(current_state)
         if state == goal:
             return True, d
+        explored.add(current_state)
+
         for child in get_children(current_state.state):
-            d[child] = state
+            d[child] = current_state.state
             child_state = AStarState(child, get_cost_to_state(child, d), manhattan_distance(child))
             if not (child_state in explored or child_state in frontier):
                 heapq.heappush(frontier, child_state)
+                # heapq.heapify(frontier)
             elif child_state in frontier:
                 child_state.g = min(get_cost_to_state(child, d), child_state.g)
                 child_state.h = min(child_state.h, manhattan_distance(child))
                 heapq.heapify(frontier)
+    print("No solution found")
     return False, d
 
 def get_path(parent_dict):  #gets the path from the dict of states -- (node, parent) is stored as (key, value) in the dict
