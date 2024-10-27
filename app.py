@@ -1,7 +1,7 @@
 from collections import deque
 import heapq
 import time
-from sympy.strategies.core import switch
+# from sympy.strategies.core import switch
 
 
 def get_children(state):  #missing number is 0
@@ -156,11 +156,12 @@ def solve_astar(initial, heuristic):   #missing number is 0
     goal = 12345678
     d = dict()
     explored = []
+    nodes_expanded = 0
     state = initial
     d[state] = -1
 
     if state == goal:
-        return True, d
+        return True, d, nodes_expanded
 
     frontier.append(AStarState(state, 0, state_heuristic(state, heuristic)))
     heapq.heapify(frontier)
@@ -168,8 +169,9 @@ def solve_astar(initial, heuristic):   #missing number is 0
     while frontier:         #while frontier is not empty
         current_state = heapq.heappop(frontier)
         if current_state.state == goal:
-            return True, d
+            return True, d, nodes_expanded
         explored.append(current_state)
+        nodes_expanded += 1
 
         for child in get_children(current_state.state):
             temp = AStarState(child, 0, 0)
@@ -188,7 +190,7 @@ def solve_astar(initial, heuristic):   #missing number is 0
                         heapq.heapify(frontier)
 
     print("No solution found")      #for debugging purposes
-    return False, d
+    return False, d, nodes_expanded
 
 def get_path(parent_dict):  #gets the path from the dict of states -- (node, parent) is stored as (key, value) in the dict
     path = deque()
@@ -255,9 +257,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             solvable, m, nodes_expanded, maxdepth = solve_dfs(init)
         elif path == 'ids':
             solvable, m, nodes_expanded = solve_ids(init)
-        elif path == 'astar':
-            solvable, m, nodes_expanded = solve_astar(init)
+        elif path == 'astar_manhattan':
+            solvable, m, nodes_expanded = solve_astar(init, 0)
             # solvable, m = solve_astar(init, 0)
+        elif path == 'astar_euclidean':
+            solvable, m, nodes_expanded = solve_astar(init, 1)
         else:
             self.send_response(404)
             self.end_headers()
