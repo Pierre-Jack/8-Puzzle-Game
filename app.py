@@ -132,8 +132,14 @@ def get_cost_to_state(state, parent_dict):  #gets the cost to reach the state fr
         node = parent_dict[node]
     return cost
 
+def state_heuristic(state, heuristic):
+    if heuristic == 0:
+        return manhattan_distance(state)
+    elif heuristic == 1:
+        return euclidean_distance(state)
 
-def solve_astar(initial):   #missing number is 0
+
+def solve_astar(initial, heuristic):   #missing number is 0
     frontier = []
     goal = 12345678
     d = dict()
@@ -144,7 +150,7 @@ def solve_astar(initial):   #missing number is 0
     if state == goal:
         return True, d
 
-    frontier.append(AStarState(state, 0, manhattan_distance(state)))
+    frontier.append(AStarState(state, 0, state_heuristic(state, heuristic)))
     heapq.heapify(frontier)
 
     while frontier:         #while frontier is not empty
@@ -157,7 +163,7 @@ def solve_astar(initial):   #missing number is 0
             temp = AStarState(child, 0, 0)
             if not (temp in explored or temp in frontier):
                 d[child] = current_state.state
-                child_state = AStarState(child, get_cost_to_state(child, d), manhattan_distance(child))
+                child_state = AStarState(child, get_cost_to_state(child, d), state_heuristic(child, heuristic))
                 heapq.heappush(frontier, child_state)
                 # heapq.heapify(frontier)
             elif temp in frontier:          #update the cost if the new cost is less
@@ -165,8 +171,8 @@ def solve_astar(initial):   #missing number is 0
                     if frontier[i].state == temp.state:
                         if get_cost_to_state(child, d) < frontier[i].g:
                             frontier[i].g = get_cost_to_state(child, d)
-                        if manhattan_distance(child) < frontier[i].h:
-                            frontier[i].h = manhattan_distance(child)
+                        if state_heuristic(child, heuristic) < frontier[i].h:
+                            frontier[i].h = state_heuristic(child, heuristic)
                         heapq.heapify(frontier)
 
     print("No solution found")      #for debugging purposes
@@ -237,7 +243,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif path == 'ids':
             solvable, m = solve_ids(init)
         elif path == 'astar':
-            solvable, m = solve_astar(init)
+            solvable, m = solve_astar(init, 0)
         else:
             self.send_response(404)
             self.end_headers()
