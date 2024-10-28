@@ -21,8 +21,8 @@ class PuzzleSolver:
         solver = IDS(self.initial, self.goal)
         return solver.solve()
 
-    def solve_astar(self):
-        solver = AStar(self.initial, self.goal)
+    def solve_astar(self, heuristic):
+        solver = AStar(self.initial, self.goal, heuristic)
         return solver.solve()
 
     def get_path(self, parent_dict):
