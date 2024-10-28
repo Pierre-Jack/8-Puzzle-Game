@@ -191,6 +191,9 @@
     }
 
     function shuffle() {
+        e.forEach((element) => {
+            element.classList.remove("highlighted");
+        });
         for (let i = 0; i < 10; i++) {
             swap(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9));
         }
@@ -259,6 +262,9 @@
     }
 
     function solve(algorithm) {
+        e.forEach((element) => {
+            element.classList.remove("highlighted");
+        });
         solving = true;
         const arrayToSend = grid;
         fetch(`http://localhost:8000/${algorithm}`, {
