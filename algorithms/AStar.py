@@ -2,7 +2,7 @@ import heapq
 from Helper import Helper
 
 class AStar:
-    class AStarState:
+    class AStarState:               #Class to store the state, g(n), h(n) and f(n) values
         def __init__(self, state, g, h):
             self.state = state
             self.g = g
@@ -22,7 +22,7 @@ class AStar:
             return hash(self.state)
 
     @staticmethod
-    def manhattan_distance(state):      #Find the manhattan distance of the state for all points
+    def manhattan_distance(state):          #Find the manhattan distance of the state for all points except 0
         s = str(state)
         if len(s) < 9: s = "0" + s
         m_distance = 0
@@ -34,7 +34,7 @@ class AStar:
         return m_distance
 
     @staticmethod
-    def euclidean_distance(state):          #Find the Euclidean distance of the state for all points
+    def euclidean_distance(state):          #Find the Euclidean distance of the state for all points except 0
         s = str(state)
         if len(s) < 9: s = "0" + s
         e_distance = 0
@@ -46,25 +46,11 @@ class AStar:
         return e_distance
 
     @staticmethod
-    def get_cost_to_state(state, parent_dict):
-        cost = 0
-        node = state
-        while parent_dict[node] != -1:
-            cost += 1
-            node = parent_dict[node]
-        return cost
-
-    @staticmethod
-    def state_heuristic(state, heuristic):
+    def state_heuristic(state, heuristic):      #Return the heuristic value of the state based on the heuristic chosen
         if heuristic == 0:
             return AStar.manhattan_distance(state)
         elif heuristic == 1:
             return AStar.euclidean_distance(state)
-
-    # @staticmethod
-    # def update_state_indices(frontier, state_indices):
-    #     for i in range(len(frontier)):
-    #         state_indices[frontier[i].state] = i
 
     def __init__(self, initial, goal, heuristic):
         self.initial = initial
@@ -75,16 +61,16 @@ class AStar:
         frontier = []
         d = dict()
         state_costs = dict()
-        # state_indices = dict()
         explored = set()
         states_in_frontier = set()
         nodes_expanded = 0
         state = self.initial
         d[state] = -1
 
-        if state == self.goal:
+        if state == self.goal:          #Goal Test
             return True, d, nodes_expanded
 
+        #Push the initial state into the frontier
         initial_state = AStar.AStarState(state, 0, AStar.state_heuristic(state, self.heuristic))
         frontier.append(initial_state)
         heapq.heapify(frontier)
@@ -95,35 +81,26 @@ class AStar:
         while frontier:
             current_state = heapq.heappop(frontier)
             states_in_frontier.remove(current_state.state)
-            if current_state.state == self.goal:
+            if current_state.state == self.goal:            #Goal Test
                 return True, d, nodes_expanded
             explored.add(current_state.state)
             nodes_expanded += 1
 
             for child in Helper.get_children(current_state.state):
-                # temp = AStar.AStarState(child, 0, 0)
-                if not ((child in explored) or (child in states_in_frontier)):
+                if not ((child in explored) or (child in states_in_frontier)):      #If the child is not in explored or frontier, add it to the frontier
                     d[child] = current_state.state
                     child_state = AStar.AStarState(child, current_state.g + 1, AStar.state_heuristic(child, self.heuristic))
                     heapq.heappush(frontier, child_state)
-                    # self.update_state_indices(frontier, state_indices)
                     states_in_frontier.add(child)
                     state_costs[child] = child_state.f
-                elif child in states_in_frontier:
+                elif child in states_in_frontier:                                   #If the child is in the frontier, update the cost if the new cost is less
                     potential_g = current_state.g + 1
                     potential_h = AStar.state_heuristic(child, self.heuristic)
-                    # current_state.f - AStar.state_heuristic(state, self.heuristic) + 1
                     if state_costs[child] > potential_g + potential_h:
-                        frontier = [AStar.AStarState(s.state, s.g, s.h) for s in frontier if s.state != child]
+                        frontier = [AStar.AStarState(s.state, s.g, s.h) for s in frontier if s.state != child]          #Make a new frontier without the child
                         state_costs[child] = potential_g + potential_h
                         d[child] = current_state.state
-                        heapq.heappush(frontier, AStar.AStarState(child, potential_g, potential_h))
+                        heapq.heappush(frontier, AStar.AStarState(child, potential_g, potential_h))             #Push the child with the new cost into the frontier
 
-                        # new_frontier = []
-                        # heapq.heapify(new_frontier)
-                        # for s in states_in_frontier:
-                        #     heapq.heappush(new_frontier, AStar.AStarState(s, state_costs[s] - AStar.state_heuristic(s, self.heuristic), AStar.state_heuristic(s, self.heuristic)))
-                        # frontier = new_frontier
-
-        print("No solution found")
+        #If no solution is found
         return False, d, nodes_expanded
