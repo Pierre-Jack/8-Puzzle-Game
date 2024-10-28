@@ -32,13 +32,20 @@
     * [Functions  ⚙️](#functions--2)
     * [Pseudocode 🧾](#pseudocode--2)
     * [Testcases ✅](#testcases--2)
-  * [A Star Algorithm (A*) ✨](#a-star-algorithm-a-)
+  * [A Star Algorithm (A*) Manhattan Heuristic ✨](#a-star-algorithm-a-manhattan-heuristic-)
     * [About 📝](#about--3)
     * [Properties 📏](#properties--3)
     * [Data Structures Used 📂](#data-structures-used--3)
     * [Functions  ⚙️](#functions--3)
     * [Pseudocode 🧾](#pseudocode--3)
     * [Testcases ✅](#testcases--3)
+  * [A Star Algorithm (A*) Euclidean Heuristic 📐](#a-star-algorithm-a-euclidean-heuristic-)
+    * [About 📝](#about--4)
+    * [Properties 📏](#properties--4)
+    * [Data Structures Used 📂](#data-structures-used--4)
+    * [Functions  ⚙️](#functions--4)
+    * [Pseudocode 🧾](#pseudocode--4)
+    * [Testcases ✅](#testcases--4)
 <!-- TOC -->
 # Introduction 🌟
 This repository contains the implementation of the 8-puzzle game as a lab of AI course using various search algorithms like Breadth First Search (BFS), Depth First Search (DFS), Iterative Deepening Search (IDS), and A* Algorithm. The 8-puzzle is a sliding puzzle that consists of a frame of numbered square tiles in random order with one tile missing. The object of the puzzle is to place the tiles in order by making sliding moves that use the empty space. The puzzle is solved when all the tiles have been ordered. The 8-puzzle problem is a classic artificial intelligence problem that can be solved with the A* algorithm. The A* algorithm is a search algorithm that finds the shortest path between the initial and final nodes. The algorithm uses a heuristic function to estimate the cost of the shortest path. The 8-puzzle problem can be solved with the A* algorithm by representing the problem as a graph and using the Manhattan distance as the heuristic function. The Manhattan distance is the sum of the horizontal and vertical distances between the current and goal positions of the tiles. The A* algorithm uses the Manhattan distance to estimate the cost of the shortest path and find the optimal solution to the 8-puzzle problem.
@@ -233,7 +240,7 @@ return failure
 | **123450768** |      No      |  0   |    4330581     |      0       |       34658       |
 | **621837450** |     Yes      |  22  |     255655     |      22      |       2121        |
 
-## A Star Algorithm (A*) ✨
+## A Star Algorithm (A*) Manhattan Heuristic ✨
 ### About 📝
 Iterative deepening search (IDS) is a state space/graph search strategy in which a depth-limited search is run repeatedly with increasing depth limits until the goal is found. It combines the benefits of depth-first search and breadth-first search. It is complete and optimal for a tree with a finite depth.
 ### Properties 📏
@@ -304,8 +311,87 @@ return failure
 ### Testcases ✅
 | Initial State | Is Solvable? | Cost | Nodes Expanded | Search Depth | Running Time (ms) |
 |:-------------:|:------------:|:----:|:--------------:|:------------:|:-----------------:|
-| **125340678** |     Yes      |      |                |              |                   |
-| **803215476** |     Yes      |      |                |              |                   |
-| **806547231** |     Yes      |      |                |              |                   |
-| **123450768** |      No      |      |                |              |                   |
-| **621837450** |     Yes      |      |                |              |                   |
+| **125340678** |     Yes      |  3   |       3        |      3       |         0         |
+| **803215476** |     Yes      |  23  |      944       |      23      |        79         |
+| **806547231** |     Yes      |  31  |      6767      |      31      |        339        |
+| **123450768** |      No      |  0   |     18140      |      0       |      135006       |
+| **621837450** |     Yes      |  22  |      744       |      22      |        11         |
+
+
+## A Star Algorithm (A*) Euclidean Heuristic 📐
+### About 📝
+Iterative deepening search (IDS) is a state space/graph search strategy in which a depth-limited search is run repeatedly with increasing depth limits until the goal is found. It combines the benefits of depth-first search and breadth-first search. It is complete and optimal for a tree with a finite depth.
+### Properties 📏
+- **Completeness:** BFS is complete if the branching factor is finite, which is true in our case
+- **Optimality:** BFS is optimal.
+- **Time Complexity:** O(b^d).
+- **Space Complexity:** O(b^(d+1)).
+
+where b is the branching factor and d is the goal depth
+
+### Data Structures Used 📂
+- Stack (Frontier Data Structure)
+- Set (stack_set - To keep track of visited nodes)
+- Set (explore_set - To keep track of explored nodes)
+- Dictionary (parent_dict - To keep track of parent nodes)
+- Dictionary (level_dict - To keep track of depth of nodes)
+
+### Functions  ⚙️
+- `solve` - Function that run DLS for increasing depth limits
+- `solve_dls` - Function to run Depth Limited Search
+- `Helper.get_children` - Function to get children of a node
+
+### Pseudocode 🧾
+```python
+func solve():
+  initialize depth to 0
+  initialize nodes_expanded to 0
+  
+  while depth is less than 32:
+    call solve_dls with depth, and assign the results to solvable, m, n
+    increment nodes_expanded by n
+    if solvable is True:
+      return True, m, nodes_expanded
+    increment depth by 1
+  
+  return False, empty dictionary, nodes_expanded
+```
+```python
+func solve_dls(depth):
+initialize structures to track explored nodes, parent relationships, and levels
+
+if starting state is the goal:
+    return success
+
+add starting state to exploration stack
+
+while there are states to explore:
+remove the next state from the stack
+
+if this state is the goal:
+return success
+
+if depth limit not reached:
+    for each child in children of state:
+    if next state is unexplored or has a shorter path:
+        Update tracking information
+        Add next state to the stack
+    else
+      get child_level from level_dict, default to 0
+      if level + 1 is less than child_level:
+        set parent_dict[child] to state
+        set level_dict[child] to level + 1
+        push (child, level + 1) to stack
+        add child to stack_set
+
+return failure
+```
+
+### Testcases ✅
+| Initial State | Is Solvable? | Cost | Nodes Expanded | Search Depth | Running Time (ms) |
+|:-------------:|:------------:|:----:|:--------------:|:------------:|:-----------------:|
+| **125340678** |     Yes      |  3   |       3        |      3       |         0         |
+| **803215476** |     Yes      |  23  |      1558      |      23      |        111        |
+| **806547231** |     Yes      |  31  |     37351      |      31      |       7450        |
+| **123450768** |      No      |  0   |     181440     |      0       |       29491       |
+| **621837450** |     Yes      |  22  |      1423      |      22      |        31         |
