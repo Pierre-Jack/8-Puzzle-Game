@@ -59,16 +59,16 @@ class AStar:
 
     def solve(self):
         frontier = []
-        d = dict()
+        parent_dict = dict()
         state_costs = dict()
         explored = set()
         states_in_frontier = set()
         nodes_expanded = 0
         state = self.initial
-        d[state] = -1
+        parent_dict[state] = -1
 
         if state == self.goal:          #Goal Test
-            return True, d, nodes_expanded
+            return True, parent_dict, nodes_expanded
 
         #Push the initial state into the frontier
         initial_state = AStar.AStarState(state, 0, AStar.state_heuristic(state, self.heuristic))
@@ -82,13 +82,13 @@ class AStar:
             current_state = heapq.heappop(frontier)
             states_in_frontier.remove(current_state.state)
             if current_state.state == self.goal:            #Goal Test
-                return True, d, nodes_expanded
+                return True, parent_dict, nodes_expanded
             explored.add(current_state.state)
             nodes_expanded += 1
 
             for child in Helper.get_children(current_state.state):
                 if not ((child in explored) or (child in states_in_frontier)):      #If the child is not in explored or frontier, add it to the frontier
-                    d[child] = current_state.state
+                    parent_dict[child] = current_state.state
                     child_state = AStar.AStarState(child, current_state.g + 1, AStar.state_heuristic(child, self.heuristic))
                     heapq.heappush(frontier, child_state)
                     states_in_frontier.add(child)
@@ -99,8 +99,8 @@ class AStar:
                     if state_costs[child] > potential_g + potential_h:
                         frontier = [AStar.AStarState(s.state, s.g, s.h) for s in frontier if s.state != child]          #Make a new frontier without the child
                         state_costs[child] = potential_g + potential_h
-                        d[child] = current_state.state
+                        parent_dict[child] = current_state.state
                         heapq.heappush(frontier, AStar.AStarState(child, potential_g, potential_h))             #Push the child with the new cost into the frontier
 
         #If no solution is found
-        return False, d, nodes_expanded
+        return False, parent_dict, nodes_expanded
