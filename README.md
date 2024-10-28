@@ -1,4 +1,4 @@
-# 8-Puzzle-Game 🧩
+# 8 Puzzle Solver Using Search Agents 🧩
 ## Collaborators 👥
 - [Armia Joseph: 21010229](https://github.com/Armaritto)
 - [Andrew Ashraf: 21010313](https://github.com/AndrewAchraf)
