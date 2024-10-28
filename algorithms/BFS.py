@@ -17,7 +17,6 @@ class BFS:
         q.append(state)
 
         while q:
-            nodes_expanded += 1
             for child in Helper.get_children(state):
                 if child not in d:
                     d[child] = state
@@ -25,4 +24,5 @@ class BFS:
             state = q.popleft()
             if state == self.goal:
                 return True, d, nodes_expanded
+            nodes_expanded += 1
         return False, d, nodes_expanded
