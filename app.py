@@ -120,6 +120,8 @@ class AStarState(object):
         return (self.h + self.g) < (other.h + other.g)
     def __eq__(self, other):
         return self.state == other.state
+    def __hash__(self):
+        return hash(self.state)
 
 def manhattan_distance(state):
     s = str(state)
@@ -155,7 +157,8 @@ def solve_astar(initial, heuristic):   #missing number is 0
     frontier = []
     goal = 12345678
     d = dict()
-    explored = []
+    explored = set()
+    states_in_frontier = set()
     nodes_expanded = 0
     state = initial
     d[state] = -1
@@ -165,28 +168,33 @@ def solve_astar(initial, heuristic):   #missing number is 0
 
     frontier.append(AStarState(state, 0, state_heuristic(state, heuristic)))
     heapq.heapify(frontier)
+    states_in_frontier.add(state)
 
     while frontier:         #while frontier is not empty
         current_state = heapq.heappop(frontier)
+        states_in_frontier.remove(current_state.state)
         if current_state.state == goal:
             return True, d, nodes_expanded
-        explored.append(current_state)
+        explored.add(current_state.state)
         nodes_expanded += 1
 
         for child in get_children(current_state.state):
-            temp = AStarState(child, 0, 0)
-            if not (temp in explored or temp in frontier):
+            # temp = AStarState(child, 0, 0)
+            if not (child in explored.union(states_in_frontier)):
                 d[child] = current_state.state
-                child_state = AStarState(child, get_cost_to_state(child, d), state_heuristic(child, heuristic))
+                child_state = AStarState(child, current_state.g + 1, state_heuristic(child, heuristic))
                 heapq.heappush(frontier, child_state)
+                states_in_frontier.add(child)
                 # heapq.heapify(frontier)
-            elif temp in frontier:          #update the cost if the new cost is less
+            elif child in states_in_frontier:              #update the cost if the new cost is less
                 for i in range(len(frontier)):
-                    if frontier[i].state == temp.state:
-                        if get_cost_to_state(child, d) < frontier[i].g:
-                            frontier[i].g = get_cost_to_state(child, d)
-                        if state_heuristic(child, heuristic) < frontier[i].h:
-                            frontier[i].h = state_heuristic(child, heuristic)
+                    if frontier[i].state == child:
+                        potential_g = current_state.g + 1
+                        potential_h = state_heuristic(child, heuristic)
+                        if potential_g < frontier[i].g:
+                            frontier[i].g = potential_g
+                        if potential_h < frontier[i].h:
+                            frontier[i].h = potential_g
                         heapq.heapify(frontier)
 
     print("No solution found")      #for debugging purposes
