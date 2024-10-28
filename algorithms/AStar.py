@@ -22,20 +22,28 @@ class AStar:
             return hash(self.state)
 
     @staticmethod
-    def manhattan_distance(state):
+    def manhattan_distance(state):      #Find the manhattan distance of the state for all points
         s = str(state)
         if len(s) < 9: s = "0" + s
-        i = s.find("0")
-        x, y = i % 3, i // 3
-        return x + y
+        m_distance = 0
+        for i in range(9):
+            if s[i] != "0":
+                x, y = i % 3, i // 3
+                x_goal, y_goal = int(s[i]) % 3, int(s[i]) // 3
+                m_distance += abs(x - x_goal) + abs(y - y_goal)
+        return m_distance
 
     @staticmethod
-    def euclidean_distance(state):
+    def euclidean_distance(state):          #Find the Euclidean distance of the state for all points
         s = str(state)
         if len(s) < 9: s = "0" + s
-        i = s.find("0")
-        x, y = i % 3, i // 3
-        return (x**2 + y**2)**0.5
+        e_distance = 0
+        for i in range(9):
+            if s[i] != "0":
+                x, y = i % 3, i // 3
+                x_goal, y_goal = int(s[i]) % 3, int(s[i]) // 3
+                e_distance += ((x - x_goal)**2 + (y - y_goal)**2)**0.5
+        return e_distance
 
     @staticmethod
     def get_cost_to_state(state, parent_dict):
@@ -94,7 +102,7 @@ class AStar:
 
             for child in Helper.get_children(current_state.state):
                 # temp = AStar.AStarState(child, 0, 0)
-                if not (child in explored.union(states_in_frontier)):
+                if not ((child in explored) or (child in states_in_frontier)):
                     d[child] = current_state.state
                     child_state = AStar.AStarState(child, current_state.g + 1, AStar.state_heuristic(child, self.heuristic))
                     heapq.heappush(frontier, child_state)
