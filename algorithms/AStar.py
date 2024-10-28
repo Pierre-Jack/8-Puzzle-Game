@@ -90,7 +90,7 @@ class AStar:
         heapq.heapify(frontier)
         states_in_frontier.add(state)
         state_costs[state] = initial_state.f
-        # state_indices[state] = 0
+
 
         while frontier:
             current_state = heapq.heappop(frontier)
@@ -116,6 +116,7 @@ class AStar:
                     if state_costs[child] > potential_g + potential_h:
                         frontier = [AStar.AStarState(s.state, s.g, s.h) for s in frontier if s.state != child]
                         state_costs[child] = potential_g + potential_h
+                        d[child] = current_state.state
                         heapq.heappush(frontier, AStar.AStarState(child, potential_g, potential_h))
 
                         # new_frontier = []
