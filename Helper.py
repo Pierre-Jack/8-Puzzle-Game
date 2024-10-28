@@ -6,7 +6,7 @@ class Helper:
         if len(s) < 9: s = "0" + s
         i = s.find("0")
 
-        for j in [-3, -1, 1, 3]:
+        for j in [1,3,-1,-3]:
             ns = list(s)
             if 0 <= i + j < 9:
                 if not (j == -1 and i % 3 == 0):
@@ -34,7 +34,7 @@ class Helper:
         if len(s) < 9: s = "0" + s
         i = s.find("0")
 
-        for j in [-3, -1, 1, 3]:
+        for j in [1,3,-1,-3]:
             ns = list(s)
             if 0 <= i + j < 9:
                 if not (j == -1 and i % 3 == 0):

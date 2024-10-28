@@ -20,13 +20,13 @@ class DFS:
 
         while stack:
             state, level = stack.pop()
+            explore.add(state)
             max_depth = max(max_depth, level)
             if state == self.goal:
                 return True, d, nodes_expanded, max_depth
-            explore.add(state)
             nodes_expanded += 1
             for child in Helper.get_children(state):
-                if child not in d and child not in stack and child not in explore:
+                if child not in stack and child not in explore:
                     d[child] = state
                     stack.append((child, level + 1))
 
