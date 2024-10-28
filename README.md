@@ -239,71 +239,122 @@ return failure
 
 ## A Star Algorithm (A*)
 ### About 📝
-Iterative deepening search (IDS) is a state space/graph search strategy in which a depth-limited search is run repeatedly with increasing depth limits until the goal is found. It combines the benefits of depth-first search and breadth-first search. It is complete and optimal for a tree with a finite depth.
-### Properties 📏
-- **Completeness:** BFS is complete if the branching factor is finite, which is true in our case
-- **Optimality:** BFS is optimal.
-- **Time Complexity:** O(b^d).
-- **Space Complexity:** O(b^(d+1)).
+A* is an Informed Search algorithm that finds the path with minimum cost to goal by selecting the next state n to be expanded by finding the state whose sum of:
+- **G(n):** The cost to reach state n from initial state.
+- **H(n):** A heuristic function that estimates how close state n is to the goal state.
+is minimum
 
-where b is the branching factor and d is the goal depth
+### Properties 📏
+- **Completeness:** A* is a complete algorithm that always finds a path to the goal state, if there exists one.
+- **Optimality:** A* is optimal, it always finds the path with minimum cost.
+- **Time Complexity:** O(b^d / log n).
+- **Space Complexity:** O(O(b^d)).
+
+where b is the branching factor, d is the goal depth, and n is the maximum number of elements placed in the heap.
 
 ### Data Structures Used 📂
-- Stack (Frontier Data Structure)
-- Set (stack_set - To keep track of visited nodes)
-- Set (explore_set - To keep track of explored nodes)
+- Heap Queue (Priority Queue) to implement the Frontier.
+- AStarState Data Structure to store the state, its g(n), h(n) and f(n) values, where f(n) = g(n) + h(n)
 - Dictionary (parent_dict - To keep track of parent nodes)
-- Dictionary (level_dict - To keep track of depth of nodes)
+- Dictionary (state_costs - To keep track of the minimum cost found for each state)
+- Set (explored - To keep track of explored nodes)
+- Set (states_in_frontier - To keep track of all the states present in the Frontier, regardless of their order)
 
 ### Functions  ⚙️
-- `solve` - Function that run DLS for increasing depth limits
-- `solve_dls` - Function to run Depth Limited Search
+- `solve` - Function that runs A* Algorithm for the passed initial state
+- `manhattan_distance` - Function to compute the Manhattan Distance heuristic of the passed state for all points except 0
+- `euclidean_distance` - Function to compute the Euclidean Distance heuristic of the passed state for all points except 0
+- `state_heuristic` - Function the heuristic value of the state based on the heuristic chosen by the user (manhattan/ euclidean)
 - `Helper.get_children` - Function to get children of a node
 
 ### Pseudocode 🧾
 ```python
 func solve():
-  initialize depth to 0
-  initialize nodes_expanded to 0
-  
-  while depth is less than 32:
-    call solve_dls with depth, and assign the results to solvable, m, n
-    increment nodes_expanded by n
-    if solvable is True:
-      return True, m, nodes_expanded
-    increment depth by 1
-  
-  return False, empty dictionary, nodes_expanded
+create empty list named frontier
+create empty dictionary named parent_dict
+create empty dictionary named state_costs
+create empty set named explored
+create empty set named states_in_frontier
+set nodes_expanded to 0
+set state to initial state
+
+parent_dict[state] = -1
+
+if state is equal to goal state:
+    return True, parent_dict, nodes_expanded
+
+create initial_state as AStarState with state, 0, state_heuristic(state, self.heuristic)
+add initial_state to frontier
+heapify frontier
+add state to states_in_frontier
+set state_costs[state] to initial_state.f
+
+while frontier is not empty:
+    current_state = get and remove the lowest f-value state from frontier
+    remove current_state.state from states_in_frontier
+    
+    if current_state.state is equal to goal state:
+        return True, parent_dict, nodes_expanded
+    
+    add current_state.state to explored
+    increment nodes_expanded by 1
+    
+    for each child in get_children(current_state.state):
+        if child is not in explored and child is not in states_in_frontier:
+            set parent_dict[child] to current_state.state
+            create child_state as AStarState with child, current_state.g + 1, state_heuristic(child, self.heuristic)
+            push child_state to frontier
+            add child to states_in_frontier
+            set state_costs[child] to child_state.f
+            
+        else if child is in states_in_frontier:
+            calculate potential_g as current_state.g + 1
+            calculate potential_h as state_heuristic(child, self.heuristic)
+            
+            if state_costs[child] > potential_g + potential_h:
+                update frontier by removing all states with child and their g and h values
+                set state_costs[child] to potential_g + potential_h
+                set parent_dict[child] to current_state.state
+                push AStarState with child, potential_g, potential_h to frontier
+
+return False, parent_dict, nodes_expanded
 ```
 ```python
-func solve_dls(depth):
-initialize structures to track explored nodes, parent relationships, and levels
-
-if starting state is the goal:
-    return success
-
-add starting state to exploration stack
-
-while there are states to explore:
-remove the next state from the stack
-
-if this state is the goal:
-return success
-
-if depth limit not reached:
-    for each child in children of state:
-    if next state is unexplored or has a shorter path:
-        Update tracking information
-        Add next state to the stack
-    else
-      get child_level from level_dict, default to 0
-      if level + 1 is less than child_level:
-        set parent_dict[child] to state
-        set level_dict[child] to level + 1
-        push (child, level + 1) to stack
-        add child to stack_set
-
-return failure
+func manhattan_distance(state):
+s = convert state to string
+    if length of s < 9:
+        s = "0" + s
+    m_distance = 0
+    for i from 0 to 8:
+        if s[i] is not "0":
+            x = i mod 3
+            y = i // 3
+            x_goal = convert s[i] to integer mod 3
+            y_goal = convert s[i] to integer // 3
+            m_distance = m_distance + abs(x - x_goal) + abs(y - y_goal)
+    return m_distance
+```
+```python
+func euclidean_distance(state):
+s = convert state to string
+    if length of s < 9:
+        s = "0" + s
+    e_distance = 0
+    for i from 0 to 8:
+        if s[i] is not "0":
+            x = i mod 3
+            y = i // 3
+            x_goal = convert s[i] to integer mod 3
+            y_goal = convert s[i] to integer // 3
+            e_distance = e_distance + sqrt((x - x_goal)**2 + (y - y_goal)**2)
+    return e_distance
+```
+```python
+func state_heuristic(state, heuristic):
+    if heuristic = 0:
+        return manhattan_distance(state)
+    else if heuristic = 1:
+        return euclidean_distance(state)
 ```
 ### Testcases ✅
 #### Manhattan Heuristic 🇺🇸
