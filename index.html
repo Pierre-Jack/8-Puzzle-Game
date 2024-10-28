@@ -149,6 +149,7 @@
         <p><strong>Nodes Expanded: </strong> <span id="nodesExpanded"></span></p>
         <p><strong>Search Depth: </strong> <span id="searchDepth"></span></p>
         <p><strong>Running Time: </strong> <span id="runningTime"></span></p>
+        <p><strong>Time per Node: </strong> <span id="tpn"></span></p>
     </div>
 </div>
 </body>
@@ -275,6 +276,7 @@
                 document.getElementById("runningTime").innerText = data.totaltime;
                 document.getElementById("costOfPath").innerText = data.cost;
                 document.getElementById("solvable").innerText = data.solvable;
+                document.getElementById("tpn").innerText = ((data.time / data.nodes_expanded)*1e6) + " micro seconds";
                 console.log(steps);
                 curr = 0;
                 highlight(steps[curr++]);

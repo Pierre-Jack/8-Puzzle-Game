@@ -29,9 +29,9 @@ class PuzzleServer(BaseHTTPRequestHandler):
         elif path == 'ids':
             solvable, m, nodes_expanded = solver.solve_ids()
         elif path == 'astar_manhattan':
-            solvable, m, nodes_expanded = solver.solve_astar()
+            solvable, m, nodes_expanded = solver.solve_astar(0)
         elif path == 'astar_euclidean':
-            solvable, m, nodes_expanded = solver.solve_astar()
+            solvable, m, nodes_expanded = solver.solve_astar(1)
         else:
             self.send_response(404)
             self.end_headers()
@@ -52,7 +52,8 @@ class PuzzleServer(BaseHTTPRequestHandler):
             'solvable': solvable,
             'totaltime': f"{int(total_time * 1000)} ms",
             'cost': len(response_array),
-            'maxdepth': maxdepth if path == 'dfs' else len(response_array)
+            'maxdepth': maxdepth if path == 'dfs' else len(response_array),
+            'time': total_time
         }
         self.wfile.write(json.dumps(response).encode())
 

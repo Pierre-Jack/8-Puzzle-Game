@@ -1,3 +1,5 @@
+from sympy.series.limits import heuristics
+
 from algorithms.BFS import BFS
 from algorithms.DFS import DFS
 from algorithms.IDS import IDS
@@ -8,6 +10,7 @@ class PuzzleSolver:
     def __init__(self, initial):
         self.initial = initial
         self.goal = 12345678
+
 
     def solve_bfs(self):
         solver = BFS(self.initial, self.goal)
@@ -21,8 +24,8 @@ class PuzzleSolver:
         solver = IDS(self.initial, self.goal)
         return solver.solve()
 
-    def solve_astar(self):
-        solver = AStar(self.initial, self.goal)
+    def solve_astar(self, heuristic):
+        solver = AStar(self.initial, self.goal,heuristic)
         return solver.solve()
 
     def get_path(self, parent_dict):
