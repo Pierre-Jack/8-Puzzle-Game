@@ -94,7 +94,7 @@ class AStar:
 
             for child in Helper.get_children(current_state.state):
                 # temp = AStar.AStarState(child, 0, 0)
-                if not (child in explored.union(states_in_frontier)):
+                if not ((child in explored) or (child in states_in_frontier)):
                     d[child] = current_state.state
                     child_state = AStar.AStarState(child, current_state.g + 1, AStar.state_heuristic(child, self.heuristic))
                     heapq.heappush(frontier, child_state)
