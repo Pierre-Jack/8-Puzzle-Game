@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-Puzzle Game</title>
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #left-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+        }
+        #right-container {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        #title {
+            font-size: 4em;
+            margin: 18px;
+        }
+        tbody {
+            text-align: center;
+        }
+        table {
+            width: 300px;
+            height: 300px;
+            background-color: #abaaaa;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        td .cell {
+            border: 1px solid #000;
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            vertical-align: middle;
+            background-color: white;
+            font-size: 2em;
+            transition: transform 0.4s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            position: relative;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .missing {
+            opacity: 0;
+            background-color: #5b5959;
+        }
+        td .highlighted {
+            background-color: rgb(242, 255, 156, .5);
+        }
+        button {
+            width: 150px;
+            height: 50px;
+            font-size: 1.2em;
+            margin: 10px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            width: 200px;
+            height: 30px;
+            font-size: 1em;
+            margin: 10px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #report {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #report h2 {
+            margin-top: 0;
+        }
+        #report p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+<div id="left-container">
+    <div id="title">8-Puzzle Game</div>
+    <table>
+        <tbody>
+        <tr>
+            <td><div class="cell" id="c0"><span>0</span></div></td>
+            <td><div class="cell" id="c1"><span>1</span></div></td>
+            <td><div class="cell" id="c2"><span>2</span></div></td>
+        </tr>
+        <tr>
+            <td><div class="cell" id="c3"><span>3</span></div></td>
+            <td><div class="cell" id="c4"><span>4</span></div></td>
+            <td><div class="cell" id="c5"><span>5</span></div></td>
+        </tr>
+        <tr>
+            <td><div class="cell" id="c6"><span>6</span></div></td>
+            <td><div class="cell" id="c7"><span>7</span></div></td>
+            <td><div class="cell" id="c8"><span>8</span></div></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="button-container">
+        <button onclick="solve('bfs')" id="solveBFS">Solve BFS</button>
+        <button onclick="solve('dfs')" id="solveDFS">Solve DFS</button>
+        <button onclick="solve('ids')" id="solveIDS">Solve IDS</button>
+        <button onclick="solve('astar')" id="solveAStar">Solve A*</button>
+    </div>
+    <input type="text" id="puzzleInput" placeholder="Insert Puzzle">
+    <button onclick="insertPuzzle()" id="insertPuzzle">Insert Puzzle</button>
+    <button onclick="shuffle()" id="shuffle">Shuffle</button>
+</div>
+<div id="right-container">
+    <div id="report">
+        <h2>Report</h2>
+        <p><strong>Is Solvable? </strong> <span id="solvable"></span></p>
+        <p><strong>Cost of Path: </strong> <span id="costOfPath"></span></p>
+        <p><strong>Nodes Expanded: </strong> <span id="nodesExpanded"></span></p>
+        <p><strong>Search Depth: </strong> <span id="searchDepth"></span></p>
+        <p><strong>Running Time: </strong> <span id="runningTime"></span></p>
+    </div>
+</div>
+</body>
+<script>
+    solving = false;
+    steps = [];
+    curr = 0;
+    const missing = 0;
+    algorithm = 'bfs';
+    var e = []; // elements
+    var t = []; // translation
+    var c = []; // coordinates
+    var grid = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    for (let i = 0; i < 9; i++) {
+        e[i] = document.getElementById("c" + i);
+        t[i] = { x: 0, y: 0 };
+        c[i] = { left: e[i].getBoundingClientRect().left, bottom: e[i].getBoundingClientRect().bottom };
+    }
+    e[missing].classList.add("missing");
+
+    function swap(a, b) {
+        var tmp = grid[a];
+        grid[a] = grid[b];
+        grid[b] = tmp;
+        a = grid[a]; b = grid[b];
+        var diff = {
+            x: (c[a].left) - (c[b].left),
+            y: (c[a].bottom) - (c[b].bottom),
+        };
+        t[b].x += diff.x; t[b].y += diff.y;
+        t[a].x -= diff.x; t[a].y -= diff.y;
+
+        c[b].left += diff.x; c[b].bottom += diff.y;
+        c[a].left -= diff.x; c[a].bottom -= diff.y;
+
+        e[b].style.transform = `translate(${t[b].x}px, ${t[b].y}px)`;
+        e[a].style.transform = `translate(${t[a].x}px, ${t[a].y}px)`;
+        //console.log(diff);
+    }
+
+    function shuffle() {
+        for (let i = 0; i < 10; i++) {
+            swap(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9));
+        }
+        while(!isSolvable(grid)){
+            swap(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9));
+        }
+        //console.log(grid);
+    }
+
+    function getInvCount(grid) {
+        let inv_count = 0;
+        for(let i=0; i<9; i++){
+            for(let j=i+1; j<9; j++){
+                if(grid[i] != 0 && grid[j] != 0 && grid[i] > grid[j]) inv_count++;
+            }
+        }
+        //console.log("Inv Count: ", inv_count);
+        return inv_count;
+    }
+    function isSolvable(grid) {
+        let invCount = getInvCount(grid);
+        return (invCount % 2 == 0);
+    }
+
+    function swipe(ev) {
+        var i = Number(this.id[1]);
+        var diff = Math.abs(grid.indexOf(missing) - grid.indexOf(i));
+        if (diff == 1 || diff == 3) {
+            swap(grid.indexOf(missing), grid.indexOf(i));
+            if (solving){
+                if(e[i].classList.contains("highlighted"))
+                highlight(steps[curr++]);
+                else{
+                    e.forEach((element) => {
+                    element.classList.remove("highlighted");
+                    });
+                    solve(algorithm);
+
+                }
+            }
+
+                
+        }
+    }
+
+    function highlight(step) {
+        e.forEach((element) => {
+            element.classList.remove("highlighted");
+        });
+        i_missing = grid.indexOf(missing);
+        switch (step) {
+            case "UP":
+                i = i_missing - 3;
+                break;
+            case "DOWN":
+                i = i_missing + 3;
+                break;
+            case "LEFT":
+                i = i_missing - 1;
+                break;
+            case "RIGHT":
+                i = i_missing + 1;
+                break;
+        }
+        e[grid[i]].classList.add("highlighted");
+    }
+
+    function solve(algorithm) {
+        solving = true;
+        const arrayToSend = grid;
+        fetch(`http://localhost:8000/${algorithm}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(arrayToSend)
+        })
+            .then(response => response.json())
+            .then(data => {
+                steps = data.array;
+                document.getElementById("nodesExpanded").innerText = data.nodes_expanded;
+                document.getElementById("searchDepth").innerText = data.maxdepth;
+                document.getElementById("runningTime").innerText = data.totaltime;
+                document.getElementById("costOfPath").innerText = data.cost;
+                document.getElementById("solvable").innerText = data.solvable;
+                console.log(steps);
+                curr = 0;
+                highlight(steps[curr++]);
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function insertPuzzle() {
+        const input = document.getElementById("puzzleInput").value;
+        if (!/^[0-8]{9}$/.test(input) || new Set(input).size !== 9) {
+            alert("Invalid input. Please enter a 9-digit number containing each digit from 0 to 8 exactly once.");
+            return;
+        }
+        const targetGrid = input.split('').map(Number);
+        //grid = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        for (let i = 0; i < 9; i++) {
+            const currentPos = grid.indexOf(targetGrid[i]);
+            if (currentPos !== i) {
+                swap(i, currentPos);
+            }
+        }
+        //console.log("Updated grid:", grid);
+    }
+
+    e.forEach((element) => {
+        element.addEventListener('click', swipe, false);
+    });
+</script>
+</html>
