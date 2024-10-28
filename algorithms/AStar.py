@@ -17,6 +17,9 @@ class AStar:
         def __eq__(self, other):
             return self.state == other.state
 
+        def __hash__(self):
+            return hash(self.state)
+
     @staticmethod
     def manhattan_distance(state):
         s = str(state)
@@ -33,14 +36,14 @@ class AStar:
         x, y = i % 3, i // 3
         return (x**2 + y**2)**0.5
 
-    @staticmethod
-    def get_cost_to_state(state, parent_dict):
-        cost = 0
-        node = state
-        while parent_dict[node] != -1:
-            cost += 1
-            node = parent_dict[node]
-        return cost
+    # @staticmethod
+    # def get_cost_to_state(state, parent_dict):
+    #     cost = 0
+    #     node = state
+    #     while parent_dict[node] != -1:
+    #         cost += 1
+    #         node = parent_dict[node]
+    #     return cost
 
     @staticmethod
     def state_heuristic(state, heuristic):
@@ -57,38 +60,46 @@ class AStar:
     def solve(self):
         frontier = []
         d = dict()
-        explored = []
+        explored = set()
+        states_in_frontier = set()
         nodes_expanded = 0
         state = self.initial
         d[state] = -1
-
         if state == self.goal:
             return True, d, nodes_expanded
 
         frontier.append(AStar.AStarState(state, 0, AStar.state_heuristic(state, self.heuristic)))
         heapq.heapify(frontier)
+        states_in_frontier.add((state,0))
 
         while frontier:
-            current_state = heapq.heappop(frontier)
+            current_state, i = heapq.heappop(frontier)
+            states_in_frontier.remove((current_state.state, i))
             if current_state.state == self.goal:
                 return True, d, nodes_expanded
-            explored.append(current_state)
+            explored.add(current_state.state)
+
             nodes_expanded += 1
 
             for child in Helper.get_children(current_state.state):
-                temp = AStar.AStarState(child, 0, 0)
-                if not (temp in explored or temp in frontier):
+                #temp = AStar.AStarState(child, 0, 0)
+                # if not (child in explored.union(states_in_frontier)):
+                if not child in explored and not child in states_in_frontier:
                     d[child] = current_state.state
-                    child_state = AStar.AStarState(child, AStar.get_cost_to_state(child, d), AStar.state_heuristic(child, self.heuristic))
+                    child_state = AStar.AStarState(child, current_state.g + 1, AStar.state_heuristic(child, self.heuristic))
                     heapq.heappush(frontier, child_state)
-                elif temp in frontier:
+                    states_in_frontier.add(child)
+                elif child in states_in_frontier:
                     for i in range(len(frontier)):
-                        if frontier[i].state == temp.state:
-                            if AStar.get_cost_to_state(child, d) < frontier[i].g:
-                                frontier[i].g = AStar.get_cost_to_state(child, d)
-                            if AStar.state_heuristic(child, self.heuristic) < frontier[i].h:
-                                frontier[i].h = AStar.state_heuristic(child, self.heuristic)
+                        if frontier[i].state == child:
+                            potential_g = current_state.g + 1
+                            potential_h = self.state_heuristic(child, self.heuristic)
+                            if potential_g < frontier[i].g:
+                                frontier[i].g = potential_g
+                            if potential_h < frontier[i].h:
+                                frontier[i].h = potential_g
                             heapq.heapify(frontier)
+
 
         print("No solution found")
         return False, d, nodes_expanded
