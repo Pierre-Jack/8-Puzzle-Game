@@ -9,6 +9,7 @@ class PuzzleSolver:
         self.initial = initial
         self.goal = 12345678
 
+
     def solve_bfs(self):
         solver = BFS(self.initial, self.goal)
         return solver.solve()

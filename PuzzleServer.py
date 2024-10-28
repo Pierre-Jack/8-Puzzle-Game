@@ -52,7 +52,8 @@ class PuzzleServer(BaseHTTPRequestHandler):
             'solvable': solvable,
             'totaltime': f"{int(total_time * 1000)} ms",
             'cost': len(response_array),
-            'maxdepth': maxdepth if path == 'dfs' else len(response_array)
+            'maxdepth': maxdepth if path == 'dfs' else len(response_array),
+            'time': total_time
         }
         self.wfile.write(json.dumps(response).encode())
 

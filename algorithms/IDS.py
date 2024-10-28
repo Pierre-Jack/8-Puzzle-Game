@@ -8,7 +8,7 @@ class IDS:
     def solve(self):
         depth = 0
         nodes_expanded = 0
-        while depth < 2e5:
+        while depth < 32:
             solvable, m, n = self.solve_dls(depth)
             nodes_expanded += n
             if solvable:
