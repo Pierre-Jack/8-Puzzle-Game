@@ -23,7 +23,7 @@ class PuzzleSolver:
         return solver.solve()
 
     def solve_astar(self, heuristic):
-        solver = AStar(self.initial, self.goal,heuristic)
+        solver = AStar(self.initial, self.goal, heuristic)
         return solver.solve()
 
     def get_path(self, parent_dict):
